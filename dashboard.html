@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audiobook Bookmarker</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="icon-book-open"></div>
+                <span>AudioBookmark</span>
+            </div>
+            <nav>
+                <button id="view-all-btn" class="nav-item active">
+                    <svg width="20" height="20" fill="none" class="nav-icon" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    Library
+                </button>
+                <button id="view-completed-btn" class="nav-item">
+                    <svg width="20" height="20" fill="none" class="nav-icon" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Completed
+                </button>
+                <button id="add-new-btn" class="nav-item">
+                    <svg width="20" height="20" fill="none" class="nav-icon" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Audiobook
+                </button>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-bar">
+                <h1>My Library</h1>
+                <div class="search-bar">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" id="search-input" placeholder="Search your audiobooks...">
+                </div>
+            </header>
+
+            <div id="library-view" class="content-section active">
+                <div id="book-grid" class="book-grid">
+                    <!-- Ongoing Books will be injected here -->
+                </div>
+                <div id="empty-state" class="empty-state hidden">
+                    <p>No audiobooks found. Start by adding one!</p>
+                </div>
+            </div>
+
+            <div id="completed-view" class="content-section hidden">
+                <div id="completed-grid" class="book-grid">
+                    <!-- Completed Books will be injected here -->
+                </div>
+                <div id="completed-empty-state" class="empty-state hidden">
+                    <p>No completed audiobooks yet.</p>
+                </div>
+            </div>
+
+            <div id="add-book-view" class="content-section hidden">
+                <div class="form-card">
+                    <h2>Add New Audiobook</h2>
+                    <form id="add-book-form">
+                        <div class="form-group">
+                            <label for="book-title">Title</label>
+                            <input type="text" id="book-title" required placeholder="e.g., The Martian">
+                        </div>
+                        <div class="form-group">
+                            <label for="book-author">Author (Optional)</label>
+                            <input type="text" id="book-author" placeholder="e.g., Andy Weir">
+                        </div>
+                        <div class="form-group">
+                            <label for="book-url">Audiobook URL</label>
+                            <input type="url" id="book-url" required placeholder="https://...">
+                        </div>
+                        <div class="form-group">
+                            <label>Cover Image</label>
+                            <div class="tabs">
+                                <label class="radio-label"><input type="radio" name="cover-source" value="url" checked>
+                                    URL</label>
+                                <label class="radio-label"><input type="radio" name="cover-source" value="upload">
+                                    Upload</label>
+                            </div>
+                            <div id="cover-url-group">
+                                <input type="url" id="book-cover" placeholder="https://...">
+                            </div>
+                            <div id="cover-upload-group" class="hidden">
+                                <input type="file" id="book-cover-file" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" id="cancel-add">Cancel</button>
+                            <button type="submit" class="btn-primary">Save Audiobook</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Edit Audiobook</h2>
+            <form id="edit-book-form">
+                <input type="hidden" id="edit-book-id">
+                <div class="form-group">
+                    <label for="edit-book-title">Title</label>
+                    <input type="text" id="edit-book-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-book-author">Author</label>
+                    <input type="text" id="edit-book-author" placeholder="e.g., Andy Weir">
+                </div>
+                <div class="form-group">
+                    <label for="edit-book-url">URL</label>
+                    <input type="url" id="edit-book-url" required>
+                </div>
+                <div class="form-group">
+                    <label>Cover Image</label>
+                    <div class="tabs">
+                        <label class="radio-label"><input type="radio" name="edit-cover-source" value="url" checked>
+                            URL</label>
+                        <label class="radio-label"><input type="radio" name="edit-cover-source" value="upload">
+                            Upload</label>
+                    </div>
+                    <div id="edit-cover-url-group">
+                        <input type="url" id="edit-book-cover" placeholder="https://...">
+                    </div>
+                    <div id="edit-cover-upload-group" class="hidden">
+                        <input type="file" id="edit-book-cover-file" accept="image/*">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancel-edit">Cancel</button>
+                    <button type="submit" class="btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
