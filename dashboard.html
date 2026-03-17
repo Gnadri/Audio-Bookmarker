@@ -37,6 +37,21 @@
                     Add Audiobook
                 </button>
             </nav>
+            <div class="sidebar-footer">
+                <button id="export-btn" class="sidebar-action-btn">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 4v12m-4-4l4 4 4-4"></path>
+                    </svg>
+                    Export Library
+                </button>
+                <button id="import-btn" class="sidebar-action-btn">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M12 12V4m-4 4l4-4 4 4"></path>
+                    </svg>
+                    Import Library
+                </button>
+                <input type="file" id="import-file-input" accept=".json" class="hidden" />
+            </div>
         </aside>
 
         <main class="main-content">
@@ -112,8 +127,8 @@
 
     <!-- Edit Modal -->
     <div id="edit-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Edit Audiobook</h2>
+        <div class="modal-content edit-modal-content">
+            <h2 class="edit-modal-title">Edit Audiobook</h2>
             <form id="edit-book-form">
                 <input type="hidden" id="edit-book-id">
                 <div class="form-group">
@@ -142,6 +157,18 @@
                     <div id="edit-cover-upload-group" class="hidden">
                         <input type="file" id="edit-book-cover-file" accept="image/*">
                     </div>
+                </div>
+                <div class="form-group edit-progress-section">
+                    <div class="edit-progress-header">
+                        <label class="edit-progress-title">Progress Log</label>
+                        <button type="button" id="edit-add-log-btn" class="edit-add-log-btn">
+                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v14M5 12h14"></path>
+                            </svg>
+                            Add
+                        </button>
+                    </div>
+                    <div id="edit-progress-logs-list"></div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-secondary" id="cancel-edit">Cancel</button>

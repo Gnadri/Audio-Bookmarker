@@ -18,7 +18,7 @@ body {
   width: 320px;
   background-color: var(--bg-dark);
   color: var(--text-main);
-  font-family: 'Outfit', sans-serif;
+  font-family: Aptos, "Segoe UI Variable Text", "Segoe UI", sans-serif;
   margin: 0;
   padding: 0;
 }
@@ -275,10 +275,207 @@ h1 {
   margin-top: 1.25rem;
 }
 
-.timestamp-section {
-  margin-top: 1rem;
-  padding-top: 1rem;
+.progress-logs-section {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--border-color);
+}
+
+.progress-logs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.progress-logs-title {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.add-log-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  background-color: transparent;
+  color: var(--primary);
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  opacity: 0.8;
+}
+
+.add-log-btn:hover {
+  background-color: rgba(88, 166, 255, 0.12);
+  opacity: 1;
+}
+
+.no-logs-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  opacity: 0.45;
+  text-align: center;
+  padding: 0.3rem 0;
+  margin: 0;
+}
+
+.log-entry {
+  background-color: transparent;
+  border: none;
+  border-left: 2px solid var(--border-color);
+  border-radius: 0;
+  padding: 0.3rem 0 0.3rem 0.5rem;
+  margin-bottom: 0.25rem;
+  transition: border-color 0.2s;
+}
+
+.log-entry:hover {
+  border-left-color: var(--primary);
+}
+
+.log-entry:last-child {
+  margin-bottom: 0;
+}
+
+.log-entry-top {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 0.25rem;
+}
+
+.log-url-input {
+  flex: 1;
+  padding: 0.25rem 0.4rem;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-bottom-color: var(--border-color);
+  border-radius: 0;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.72rem;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+
+.log-url-input:focus {
+  outline: none;
+  border-bottom-color: var(--primary);
+}
+
+.log-url-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.4;
+  font-size: 0.7rem;
+}
+
+.log-remove-btn {
+  padding: 0.15rem;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0.4;
+  transition: all 0.15s;
+}
+
+.log-entry:hover .log-remove-btn {
+  opacity: 0.7;
+}
+
+.log-remove-btn:hover {
+  color: #f85149;
+  opacity: 1 !important;
+  background-color: rgba(248, 81, 73, 0.08);
+}
+
+.log-entry-bottom {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.log-type-toggle {
+  display: flex;
+  gap: 1px;
+  border: none;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.log-type-btn {
+  padding: 0.2rem 0.45rem;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border-radius: 3px;
+  opacity: 0.7;
+}
+
+.log-type-btn.active {
+  background-color: rgba(88, 166, 255, 0.18);
+  color: var(--primary);
+  opacity: 1;
+}
+
+.log-type-btn:hover:not(.active) {
+  opacity: 1;
+  color: var(--text-main);
+}
+
+.log-value-input {
+  flex: 1;
+  padding: 0.22rem 0.4rem;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-bottom-color: var(--border-color);
+  border-radius: 0;
+  color: var(--text-main);
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  text-align: right;
+  min-width: 0;
+  transition: border-color 0.2s;
+}
+
+.log-value-input:focus {
+  outline: none;
+  border-bottom-color: var(--primary);
+}
+
+.log-value-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.35;
+  font-family: inherit;
+  font-size: 0.72rem;
+}
+
+.log-value-input[type="number"]::-webkit-inner-spin-button,
+.log-value-input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.log-value-input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .timestamp-label {

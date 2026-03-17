@@ -15,9 +15,13 @@ const ELEMENTS = {
     editModal: document.getElementById('edit-modal'),
     editBookForm: document.getElementById('edit-book-form'),
     cancelEditBtn: document.getElementById('cancel-edit'),
+    exportBtn: document.getElementById('export-btn'),
+    importBtn: document.getElementById('import-btn'),
+    importFileInput: document.getElementById('import-file-input'),
 };
 
 let books = [];
+let editingLogs = []; // in-memory copy for the edit modal
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -77,6 +81,86 @@ function setupEventListeners() {
     // Cover Source Toggles
     handleCoverSourceToggle('cover-source', 'cover-url-group', 'cover-upload-group');
     handleCoverSourceToggle('edit-cover-source', 'edit-cover-url-group', 'edit-cover-upload-group');
+
+    // Export / Import
+    ELEMENTS.exportBtn.addEventListener('click', exportLibrary);
+    ELEMENTS.importBtn.addEventListener('click', () => ELEMENTS.importFileInput.click());
+    ELEMENTS.importFileInput.addEventListener('change', importLibrary);
+}
+
+function exportLibrary() {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const exportData = {
+        exportedAt: new Date().toISOString(),
+        version: 1,
+        audiobooks: books
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audiobookmark-backup-${timestamp}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importLibrary(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    ELEMENTS.importFileInput.value = '';
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        let parsed;
+        try {
+            parsed = JSON.parse(ev.target.result);
+        } catch (_) {
+            alert('Invalid file: could not parse JSON.');
+            return;
+        }
+
+        // Accept both a raw array and the wrapped export format
+        const incoming = Array.isArray(parsed) ? parsed
+            : (parsed && Array.isArray(parsed.audiobooks)) ? parsed.audiobooks
+            : null;
+
+        if (!incoming) {
+            alert('Invalid file: no audiobook data found.');
+            return;
+        }
+
+        // Validate each entry has at minimum an id, title, and url
+        const valid = incoming.filter(b =>
+            b && typeof b === 'object' &&
+            typeof b.id === 'string' &&
+            typeof b.title === 'string' &&
+            typeof b.url === 'string'
+        );
+
+        if (valid.length === 0) {
+            alert('No valid audiobook entries found in the file.');
+            return;
+        }
+
+        const action = confirm(
+            `Import ${valid.length} audiobook(s)?\n\n` +
+            `OK — Merge with existing library (duplicates by ID are skipped)\n` +
+            `Cancel — Cancel import`
+        );
+        if (!action) return;
+
+        chrome.storage.local.get(['audiobooks'], (result) => {
+            const existing = result.audiobooks || [];
+            const existingIds = new Set(existing.map(b => b.id));
+            const toAdd = valid.filter(b => !existingIds.has(b.id));
+            const merged = existing.concat(toAdd);
+            chrome.storage.local.set({ audiobooks: merged }, () => {
+                alert(`Imported ${toAdd.length} new audiobook(s). ${valid.length - toAdd.length} duplicate(s) skipped.`);
+                loadBooks();
+            });
+        });
+    };
+    reader.readAsText(file);
 }
 
 async function handleAddBook(e) {
@@ -136,12 +220,86 @@ function openEditModal(book) {
     document.getElementById('edit-cover-url-group').classList.remove('hidden');
     document.getElementById('edit-cover-upload-group').classList.add('hidden');
 
+    // Load progress logs into memory and render
+    editingLogs = JSON.parse(JSON.stringify(book.progressLogs || []));
+    renderEditProgressLogs();
+
     ELEMENTS.editModal.classList.remove('hidden');
 }
 
 function closeEditModal() {
     ELEMENTS.editModal.classList.add('hidden');
 }
+
+function escapeHtml(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function renderEditProgressLogs() {
+    const container = document.getElementById('edit-progress-logs-list');
+    container.innerHTML = '';
+
+    if (editingLogs.length === 0) {
+        container.innerHTML = '<p class="edit-no-logs-hint">No entries yet.</p>';
+        return;
+    }
+
+    editingLogs.forEach((log, idx) => {
+        const isTs = log.type === 'timestamp';
+        const row = document.createElement('div');
+        row.className = 'edit-log-entry';
+        row.innerHTML = `
+            <div class="edit-log-entry-top">
+                <input type="url" class="edit-log-url" placeholder="Link (optional)" value="${escapeHtml(log.url || '')}" />
+                <button type="button" class="edit-log-remove" title="Remove entry">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="edit-log-entry-bottom">
+                <div class="edit-log-type-toggle">
+                    <button type="button" class="edit-log-type-btn${!isTs ? ' active' : ''}" data-type="page">Page</button>
+                    <button type="button" class="edit-log-type-btn${isTs ? ' active' : ''}" data-type="timestamp">Time</button>
+                </div>
+                <input type="${isTs ? 'text' : 'number'}" class="edit-log-value" placeholder="${isTs ? '0:00:00' : '#'}" value="${escapeHtml(String(log.value || ''))}" ${!isTs ? 'min="1"' : ''} />
+            </div>
+        `;
+
+        row.querySelector('.edit-log-url').addEventListener('input', (e) => {
+            editingLogs[idx].url = e.target.value.trim();
+        });
+
+        row.querySelector('.edit-log-value').addEventListener('input', (e) => {
+            const v = e.target.value.trim();
+            editingLogs[idx].value = !isTs && v ? (parseInt(v) || '') : v;
+        });
+
+        row.querySelectorAll('.edit-log-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                editingLogs[idx].type = btn.dataset.type;
+                editingLogs[idx].value = '';
+                renderEditProgressLogs();
+            });
+        });
+
+        row.querySelector('.edit-log-remove').addEventListener('click', () => {
+            editingLogs.splice(idx, 1);
+            renderEditProgressLogs();
+        });
+
+        container.appendChild(row);
+    });
+}
+
+document.getElementById('edit-add-log-btn').addEventListener('click', () => {
+    editingLogs.push({ url: '', type: 'timestamp', value: '' });
+    renderEditProgressLogs();
+});
 
 async function handleEditBook(e) {
     e.preventDefault();
@@ -176,6 +334,7 @@ async function handleEditBook(e) {
         if (cover !== null) { // Only update cover if a new one was provided
             books[bookIndex].cover = cover;
         }
+        books[bookIndex].progressLogs = editingLogs;
         saveBooks();
         closeEditModal();
     }
@@ -233,33 +392,53 @@ function renderBooks(filter = '') {
     const ongoingBooks = filteredBooks.filter(b => !b.completed);
     const completedBooks = filteredBooks.filter(b => b.completed);
 
-    if (ongoingBooks.length === 0) {
+    if (filteredBooks.length === 0) {
         ELEMENTS.emptyState.classList.remove('hidden');
     } else {
         ELEMENTS.emptyState.classList.add('hidden');
-        ongoingBooks.forEach(book => ELEMENTS.bookGrid.appendChild(createBookCard(book)));
+        ongoingBooks.forEach(book => ELEMENTS.bookGrid.appendChild(createBookCard(book, true)));
+        completedBooks.forEach(book => ELEMENTS.bookGrid.appendChild(createBookCard(book, true)));
     }
 
     if (completedBooks.length === 0) {
         ELEMENTS.completedEmptyState.classList.remove('hidden');
     } else {
         ELEMENTS.completedEmptyState.classList.add('hidden');
-        completedBooks.forEach(book => ELEMENTS.completedGrid.appendChild(createBookCard(book)));
+        completedBooks.forEach(book => ELEMENTS.completedGrid.appendChild(createBookCard(book, false)));
     }
 }
 
-function createBookCard(book) {
+function createBookCard(book, showProgress = true) {
     const card = document.createElement('div');
     card.className = 'book-card';
 
     // Default cover if none provided
     const coverUrl = book.cover || 'icons/icon128.png'; // Fallback to icon
 
+    const progressLogs = showProgress && book.progressLogs ? book.progressLogs.filter(l => l.value) : [];
+    const progressHtml = progressLogs.length > 0 ? `
+        <div class="book-progress-logs">
+            ${progressLogs.map(log => {
+                const label = log.type === 'page' ? 'p.' + log.value : String(log.value);
+                let safeUrl = null;
+                if (log.url) {
+                    try {
+                        const u = new URL(log.url);
+                        if (u.protocol === 'http:' || u.protocol === 'https:') safeUrl = log.url;
+                    } catch (_) {}
+                }
+                return safeUrl
+                    ? `<a href="${safeUrl}" target="_blank" class="book-progress-entry book-progress-link" title="${safeUrl}">${label}</a>`
+                    : `<span class="book-progress-entry">${label}</span>`;
+            }).join('')}
+        </div>` : '';
+
     card.innerHTML = `
         <img src="${coverUrl}" alt="${book.title}" class="book-cover" onerror="this.src='icons/icon128.png'">
         <div class="book-info">
             <h3 class="book-title" title="${book.title}">${book.title}</h3>
             <p class="book-author">${book.author || 'Unknown Author'}</p>
+            ${progressHtml}
         </div>
         <div class="book-actions">
             ${!book.completed ? `

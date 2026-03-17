@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AudioBookmark</title>
   <link rel="stylesheet" href="popup.css">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -55,16 +54,17 @@
               </div>
             </div>
             
-            <div class="timestamp-section">
-              <label for="bookmark-timestamp" class="timestamp-label">Last Position:</label>
-              <div class="timestamp-input-group">
-                <input type="text" id="bookmark-timestamp" class="timestamp-input" placeholder="0:00:00" pattern="[0-9]+:[0-5][0-9]:[0-5][0-9]" title="Format: H:MM:SS or HH:MM:SS" />
-                <button id="clearTimestampBtn" class="clear-timestamp-btn" title="Clear">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <div class="progress-logs-section">
+              <div class="progress-logs-header">
+                <span class="progress-logs-title">Progress Log</span>
+                <button id="addProgressLogBtn" class="add-log-btn">
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v14M5 12h14"></path>
                   </svg>
+                  Add
                 </button>
               </div>
+              <div id="progress-logs-list"></div>
             </div>
           </div>
 
